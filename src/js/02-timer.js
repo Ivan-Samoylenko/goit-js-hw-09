@@ -1,6 +1,7 @@
 // imports
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import Notiflix from 'notiflix';
 
 // variables
 let selectedDate = null;
@@ -12,9 +13,7 @@ const datePickerOptions = {
   minuteIncrement: 1,
   onOpen() {
     if (timerId) {
-      clearInterval(timerId);
-      timerId = null;
-      doTimerMarkup(0);
+      resetTimer();
     }
   },
   onClose(selectedDates) {
@@ -23,9 +22,10 @@ const datePickerOptions = {
     if (isSelectedTimeValid) {
       selectedDate = selectedDates[0].getTime();
       enableStartButton();
+      message(true);
     } else {
       disableStartButton();
-      errorMessage();
+      message(false);
     }
   },
 };
@@ -51,7 +51,7 @@ refs.startButton.addEventListener('click', onStart);
 function onStart() {
   if (new Date().getTime() > selectedDate) {
     disableStartButton();
-    errorMessage();
+    message();
     return;
   }
   disableStartButton();
@@ -60,10 +60,9 @@ function onStart() {
   doTimerMarkup(time);
   // other all next markups change
   timerId = setInterval(() => {
-    time -= 1000;
+    time = selectedDate - new Date().getTime();
     if (time <= 0) {
-      clearInterval(timerId);
-      timerId = null;
+      resetTimer();
       return;
     }
     doTimerMarkup(time);
@@ -71,6 +70,22 @@ function onStart() {
 }
 
 // functions helpers
+function message(state) {
+  if (state) {
+    Notiflix.Notify.success('You can start timer');
+  } else {
+    Notiflix.Notify.failure('Please choose a date in the future');
+  }
+}
+
+function enableStartButton() {
+  refs.startButton.removeAttribute('disabled');
+}
+
+function disableStartButton() {
+  refs.startButton.setAttribute('disabled', 'true');
+}
+
 function convertMs(ms) {
   // Number of milliseconds per unit of time
   const second = 1000;
@@ -90,16 +105,8 @@ function convertMs(ms) {
   return { days, hours, minutes, seconds };
 }
 
-function errorMessage() {
-  window.alert('Please choose a date in the future');
-}
-
-function enableStartButton() {
-  refs.startButton.removeAttribute('disabled');
-}
-
-function disableStartButton() {
-  refs.startButton.setAttribute('disabled', 'true');
+function pad(value) {
+  return String(value).padStart(2, '0');
 }
 
 function doTimerMarkup(ms) {
@@ -110,6 +117,8 @@ function doTimerMarkup(ms) {
   refs.seconds.textContent = pad(seconds);
 }
 
-function pad(value) {
-  return String(value).padStart(2, '0');
+function resetTimer() {
+  clearInterval(timerId);
+  timerId = null;
+  doTimerMarkup(0);
 }
