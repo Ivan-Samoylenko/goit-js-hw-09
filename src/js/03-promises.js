@@ -1,10 +1,6 @@
 // imports
 import Notiflix from 'notiflix';
 
-// variables
-let firstTimeoutId = null;
-let stepTimeoutId = null;
-
 // rferences
 const refs = {
   form: document.querySelector('.form'),
